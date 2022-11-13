@@ -41,8 +41,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Button btnDatePicker;
     Button btnStartTimePicker;
     Button btnEndTimePicker;
+
     Button btnSubmit;
+
     Button btnCamera;
+
+    ImageView myImageView;
+
 
     private int myYearStart, myMonthStart, myDayStart, myHourStart, myMinuteStart;
     private int myYearStartCache, myMonthStartCache, myDayStartCache, myHourStartCache, myMinuteStartCache;
@@ -71,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnEndTimePicker = (Button) findViewById(R.id.btn_timeEnd);
         btnSubmit = (Button) findViewById(R.id.submit);
         btnCamera = (Button) findViewById(R.id.camera);
+        myImageView = (ImageView) findViewById(R.id.imageView);
 
         //deatilsView = (TextView) findViewById(R.id.params);
         checkBox = (CheckBox) findViewById(R.id.checkBox);
@@ -85,6 +91,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         checkBox.setOnClickListener(this);
         btnSubmit.setOnClickListener(this);
         btnCamera.setOnClickListener(this);
+
     }
 
     @Override
@@ -210,30 +217,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
+            myImageView.setImageURI(imageUri);
             Toast.makeText(this, "Captured image is stored to gallery", Toast.LENGTH_SHORT);
         }
     }
 
     private void showDetails() {
-//        if (checkBox.isChecked() && eventDate!=null){
-//            // String resultText = deatilsView.getText().toString();
-//            List<String> attendees = new ArrayList<String>();
-////            attendees = Arrays.asList(eventAttendees.getText().toString().split(","));
-////            deatilsView.setText("Event title is : "+eventTitle.getText().toString()+"\nEvent Description is : "+eventDescription.getText()+"\nYour event is at : " + eventDate + "\nThe event is scheduled for whole day"+"\nThe people attending are:");
-////            for (int i = 0; i < attendees.size(); i++) {
-////                deatilsView.setText(deatilsView.getText().toString() + "\n" + attendees.get(i));
-////            }
-//
-//        }
-//        else if(!checkBox.isChecked() && startTime!=null && endTime!=null){
-////            deatilsView.setText("Event title is : "+eventTitle.getText().toString()+"\nEvent Description is : "+eventDescription.getText()+"\nYour event is at : " + eventDate + startTime + endTime+"\nThe people attending are:");
-////            List<String> attendees = new ArrayList<String>();
-////            attendees = Arrays.asList(eventAttendees.getText().toString().split(","));
-////
-////            for (int i = 0; i < attendees.size(); i++) {
-////                deatilsView.setText(deatilsView.getText().toString() + "\n"+ attendees.get(i));
-////            }
-//        }
 
 
         calStart.set(myYearStartCache,myMonthStartCache,myDayStartCache,myHourStartCache,myMinuteStartCache);
@@ -254,13 +243,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         intent.putExtra(Intent.EXTRA_EMAIL, eventAttendees.getText().toString());
 
-//        if(intent.resolveActivity(getPackageManager()) != null){
-//            startActivity(intent);
-//        }
-//        else{
-//            Toast.makeText(MainActivity.this, "Please fill all the fields correctly", Toast.LENGTH_SHORT).show();
-//
-//        }
         startActivity(intent);
     }
 

@@ -1,21 +1,31 @@
 package org.n01472825.appointmentapp;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.Manifest;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.CalendarContract;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -26,10 +36,13 @@ import java.util.TimeZone;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
 
+    private static final int PERMISSION_CODE = 1000;
+    private static final int IMAGE_CAPTURE_CODE = 1001;
     Button btnDatePicker;
     Button btnStartTimePicker;
     Button btnEndTimePicker;
     Button btnSubmit;
+    Button btnCamera;
 
     private int myYearStart, myMonthStart, myDayStart, myHourStart, myMinuteStart;
     private int myYearStartCache, myMonthStartCache, myDayStartCache, myHourStartCache, myMinuteStartCache;
@@ -42,10 +55,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     CheckBox checkBox;
     EditText eventTitle, eventDescription, eventAttendees;
 
-    boolean eventSetFlag = false;
-
     Calendar calStart = Calendar.getInstance(TimeZone.getTimeZone("America/New_York"));
     Calendar calEnd = Calendar.getInstance(TimeZone.getTimeZone("America/New_York"));
+
+    Uri imageUri;
+    ImageView imageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,8 +70,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnStartTimePicker = (Button) findViewById(R.id.btn_timeStart);
         btnEndTimePicker = (Button) findViewById(R.id.btn_timeEnd);
         btnSubmit = (Button) findViewById(R.id.submit);
+        btnCamera = (Button) findViewById(R.id.camera);
 
-        deatilsView = (TextView) findViewById(R.id.params);
+        //deatilsView = (TextView) findViewById(R.id.params);
         checkBox = (CheckBox) findViewById(R.id.checkBox);
 
         eventTitle = (EditText) findViewById(R.id.eventName);
@@ -69,6 +84,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnEndTimePicker.setOnClickListener(this);
         checkBox.setOnClickListener(this);
         btnSubmit.setOnClickListener(this);
+        btnCamera.setOnClickListener(this);
     }
 
     @Override
@@ -88,8 +104,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         @Override
                         public void onDateSet(DatePicker view, int year,
                                               int monthOfYear, int dayOfMonth) {
-                            //String resultText = deatilsView.getText().toString();
-                            //deatilsView.setText(resultText + dayOfMonth + "-" + (monthOfYear + 1) + "-" + year);
                             eventDate = "Date : " + dayOfMonth + "-" + (monthOfYear + 1) + "-" + year;
                             myDayStartCache = dayOfMonth;
                             myMinuteStartCache = monthOfYear+1;
@@ -113,8 +127,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         @Override
                         public void onTimeSet(TimePicker view, int hourOfDay,
                                               int minute) {
-                            //String resultText = deatilsView.getText().toString();
-                            //deatilsView.setText(resultText + hourOfDay + ":" + minute);
                             startTime = "\nStarts at : "+hourOfDay + ":" + minute;
                             myHourStartCache = hourOfDay;
                             myMinuteStartCache = minute;
@@ -137,8 +149,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         @Override
                         public void onTimeSet(TimePicker view, int hourOfDay,
                                               int minute) {
-                            //String resultText = deatilsView.getText().toString();
-                            //deatilsView.setText(resultText + hourOfDay + ":" + minute);
                             endTime = "\nEnds at : " + hourOfDay + ":" + minute;
                             myHourEndCache = hourOfDay;
                             myMinuteEndCache = minute;
@@ -150,11 +160,63 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if(view == btnSubmit){
             showDetails();
         }
+
+        if (view == btnCamera){
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                if(checkSelfPermission(Manifest.permission.CAMERA)==
+                        PackageManager.PERMISSION_DENIED ||
+                        checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)==
+                                PackageManager.PERMISSION_DENIED){
+                    //permission not enabled, request permission
+                    String[] permission = {Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+                    //show popup to request permission
+                    requestPermissions(permission, PERMISSION_CODE);
+                }
+                else{
+                    openCamera();
+                }
+            }
+            else{
+                openCamera();
+            }
+        }
+    }
+
+    private void openCamera() {
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.TITLE,"New Picture");
+        values.put(MediaStore.Images.Media.DESCRIPTION,"New Picture from my camera app");
+        imageUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+        startActivityForResult(cameraIntent, IMAGE_CAPTURE_CODE);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case PERMISSION_CODE: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    openCamera();
+                } else {
+                    Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT);
+                }
+            }
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            Toast.makeText(this, "Captured image is stored to gallery", Toast.LENGTH_SHORT);
+        }
     }
 
     private void showDetails() {
         if (checkBox.isChecked() && eventDate!=null){
-           // String resultText = deatilsView.getText().toString();
+            // String resultText = deatilsView.getText().toString();
             List<String> attendees = new ArrayList<String>();
             attendees = Arrays.asList(eventAttendees.getText().toString().split(","));
             deatilsView.setText("Event title is : "+eventTitle.getText().toString()+"\nEvent Description is : "+eventDescription.getText()+"\nYour event is at : " + eventDate + "\nThe event is scheduled for whole day"+"\nThe people attending are:");
@@ -190,16 +252,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         intent.putExtra(Intent.EXTRA_EMAIL, eventAttendees.getText().toString());
 
-//        Intent intent = new Intent(Intent.ACTION_EDIT);
-//        intent.setType("vnd.android.cursor.item/event");
-//        intent.putExtra("title", eventTitle.getText().toString());
-//        intent.putExtra("description", eventDescription.getText().toString());
-//        intent.putExtra(CalendarContract.Events.ALL_DAY, checkBox.isChecked());
-//        calStart.set(myYearStart,myMonthStart,myDayStart,myHourStart,myMinuteStart);
-//        calEnd.set(myYearStart,myMonthStart,myDayStart,myHourEnd,myMinuteEnd);
-//        intent.putExtra("beginTime", calStart.getTimeInMillis());
-//        intent.putExtra("endTime", calEnd.getTimeInMillis());
-//        startActivity(intent);
         if(intent.resolveActivity(getPackageManager()) != null){
             startActivity(intent);
         }
@@ -210,4 +262,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
+    public void onSendMessage(View view) {
+        EditText messageView = (EditText) findViewById(R.id.message);
+        String messageText = messageView.getText().toString();
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_SUBJECT,"Message sent from my messenger app");
+        intent.putExtra(Intent.EXTRA_TEXT, messageText);
+        startActivity(intent);
+    }
 }

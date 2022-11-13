@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private int myHourEndCache, myMinuteEndCache;
 
     private String startTime, endTime, eventDate;
-    TextView deatilsView;
+    //TextView deatilsView;
     CheckBox checkBox;
     EditText eventTitle, eventDescription, eventAttendees;
 
@@ -215,25 +215,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void showDetails() {
-        if (checkBox.isChecked() && eventDate!=null){
-            // String resultText = deatilsView.getText().toString();
-            List<String> attendees = new ArrayList<String>();
-            attendees = Arrays.asList(eventAttendees.getText().toString().split(","));
-            deatilsView.setText("Event title is : "+eventTitle.getText().toString()+"\nEvent Description is : "+eventDescription.getText()+"\nYour event is at : " + eventDate + "\nThe event is scheduled for whole day"+"\nThe people attending are:");
-            for (int i = 0; i < attendees.size(); i++) {
-                deatilsView.setText(deatilsView.getText().toString() + "\n" + attendees.get(i));
-            }
-
-        }
-        else if(!checkBox.isChecked() && startTime!=null && endTime!=null){
-            deatilsView.setText("Event title is : "+eventTitle.getText().toString()+"\nEvent Description is : "+eventDescription.getText()+"\nYour event is at : " + eventDate + startTime + endTime+"\nThe people attending are:");
-            List<String> attendees = new ArrayList<String>();
-            attendees = Arrays.asList(eventAttendees.getText().toString().split(","));
-
-            for (int i = 0; i < attendees.size(); i++) {
-                deatilsView.setText(deatilsView.getText().toString() + "\n"+ attendees.get(i));
-            }
-        }
+//        if (checkBox.isChecked() && eventDate!=null){
+//            // String resultText = deatilsView.getText().toString();
+//            List<String> attendees = new ArrayList<String>();
+////            attendees = Arrays.asList(eventAttendees.getText().toString().split(","));
+////            deatilsView.setText("Event title is : "+eventTitle.getText().toString()+"\nEvent Description is : "+eventDescription.getText()+"\nYour event is at : " + eventDate + "\nThe event is scheduled for whole day"+"\nThe people attending are:");
+////            for (int i = 0; i < attendees.size(); i++) {
+////                deatilsView.setText(deatilsView.getText().toString() + "\n" + attendees.get(i));
+////            }
+//
+//        }
+//        else if(!checkBox.isChecked() && startTime!=null && endTime!=null){
+////            deatilsView.setText("Event title is : "+eventTitle.getText().toString()+"\nEvent Description is : "+eventDescription.getText()+"\nYour event is at : " + eventDate + startTime + endTime+"\nThe people attending are:");
+////            List<String> attendees = new ArrayList<String>();
+////            attendees = Arrays.asList(eventAttendees.getText().toString().split(","));
+////
+////            for (int i = 0; i < attendees.size(); i++) {
+////                deatilsView.setText(deatilsView.getText().toString() + "\n"+ attendees.get(i));
+////            }
+//        }
 
 
         calStart.set(myYearStartCache,myMonthStartCache,myDayStartCache,myHourStartCache,myMinuteStartCache);
@@ -243,6 +243,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         intent.putExtra(CalendarContract.Events.TITLE, eventTitle.getText().toString());
         intent.putExtra(CalendarContract.Events.DESCRIPTION, eventDescription.getText().toString());
         if(checkBox.isChecked()){
+            calStart.set(myYearStartCache,myMonthStartCache,myDayStartCache);
+            intent.putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME,calStart.getTimeInMillis());
             intent.putExtra(CalendarContract.Events.ALL_DAY, checkBox.isChecked());
             intent.putExtra(CalendarContract.Events.DURATION, "PT1D");
         }
@@ -252,13 +254,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         intent.putExtra(Intent.EXTRA_EMAIL, eventAttendees.getText().toString());
 
-        if(intent.resolveActivity(getPackageManager()) != null){
-            startActivity(intent);
-        }
-        else{
-            Toast.makeText(MainActivity.this, "Please fill all the fields correctly", Toast.LENGTH_SHORT).show();
-
-        }
+//        if(intent.resolveActivity(getPackageManager()) != null){
+//            startActivity(intent);
+//        }
+//        else{
+//            Toast.makeText(MainActivity.this, "Please fill all the fields correctly", Toast.LENGTH_SHORT).show();
+//
+//        }
+        startActivity(intent);
     }
 
 
